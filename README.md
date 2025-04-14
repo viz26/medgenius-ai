@@ -45,19 +45,19 @@ npm run dev
 
 ## API Keys Setup
 
-This application uses the Groq AI API for generating medical recommendations and analysis.
+This application uses the OPENAI  API for generating medical recommendations and analysis.
 
 ### Production Configuration:
 
 For production deployments, API keys should always be stored in server-side environment variables:
 
-1. Create a server middleware or backend API to proxy requests to the Groq API
-2. Store your Groq API key in server-side environment variables (e.g., .env file that's not committed to version control)
+1. Create a server middleware or backend API to proxy requests to the OPENAI API
+2. Store your OPENAI API key in server-side environment variables (e.g., .env file that's not committed to version control)
 3. Create API endpoints that your frontend can call without exposing the API key
 
 Example server-side .env file:
 ```
-GROQ_API_KEY=your_api_key_here
+OPENAI_KEY=your_api_key_here
 JWT_SECRET=your_jwt_secret_here
 ```
 
@@ -67,7 +67,7 @@ For local development:
 
 1. Create a `.env.local` file in the project root (do not commit this to version control)
 2. Add your API key: `VITE_GROQ_API_KEY=your_api_key_here`
-3. In your code, access it via `import.meta.env.VITE_GROQ_API_KEY`
+3. In your code, access it via `import.meta.env.VITE_OPENAI_KEY`
 
 ### Demo Configuration:
 
