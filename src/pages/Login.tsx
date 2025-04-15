@@ -34,7 +34,7 @@ export default function Login() {
     setLoading(true);
     try {
       await signIn(loginData.email, loginData.password);
-      navigate('/dashboard');
+      navigate('/patient-analysis');
     } catch (error) {
       console.error('Login error:', error);
     } finally {
@@ -57,7 +57,7 @@ export default function Login() {
     setLoading(true);
     try {
       await signUp(registerData.email, registerData.password, registerData.name, registerData.role);
-      navigate('/dashboard');
+      navigate('/patient-analysis');
     } catch (error) {
       console.error('Registration error:', error);
     } finally {

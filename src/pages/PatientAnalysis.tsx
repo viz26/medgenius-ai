@@ -402,7 +402,7 @@ const PatientAnalysis = () => {
     }
   };
 
-  return (
+      return (
     <PageContainer>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
@@ -420,62 +420,62 @@ const PatientAnalysis = () => {
               <h1 className="text-3xl font-bold mb-4">Patient Analysis</h1>
               <p className="text-gray-600">
                 Enter patient information, symptoms, and medical history for AI-powered analysis.
-              </p>
-            </div>
+            </p>
+          </div>
 
             <div className="space-y-8">
               <div className="animate-slide-up">
-                <GlassCard className="h-full">
+              <GlassCard className="h-full">
                   <h2 className="text-xl font-semibold mb-6">Enter Patient Information</h2>
-                  
-                  <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">
+                
+                <div className="space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
                         Patient Information
-                      </label>
-                      <Textarea
+                    </label>
+                    <Textarea
                         placeholder="Enter patient details, medical history, current medications, etc."
-                        className="min-h-[150px]"
+                      className="min-h-[150px]"
                         value={patientInfo}
                         onChange={e => setPatientInfo(e.target.value)}
-                      />
-                    </div>
-
-                    <Button 
-                      className="w-full" 
-                      onClick={handleAnalysis}
-                      disabled={isAnalyzing}
-                    >
-                      {isAnalyzing ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Analyzing...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="mr-2 h-4 w-4" />
-                          Analyze Patient Data
-                        </>
-                      )}
-                    </Button>
-
-                    {isAnalyzing && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs mb-1">
-                          <span>Analyzing patient data</span>
-                          <span>{progress}%</span>
-                        </div>
-                        <Progress value={progress} className="h-2" />
-                      </div>
-                    )}
+                    />
                   </div>
-                </GlassCard>
-              </div>
+
+                  <Button 
+                    className="w-full" 
+                      onClick={handleAnalysis}
+                    disabled={isAnalyzing}
+                  >
+                    {isAnalyzing ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Analyzing...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Analyze Patient Data
+                      </>
+                    )}
+                  </Button>
+
+                  {isAnalyzing && (
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-xs mb-1">
+                          <span>Analyzing patient data</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2" />
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            </div>
 
               <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
-                <GlassCard className="h-full">
+              <GlassCard className="h-full">
                   <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-semibold">Analysis Results</h2>
+                  <h2 className="text-xl font-semibold">Analysis Results</h2>
                     {analysis && (
                       <Button
                         variant="outline"
@@ -485,26 +485,26 @@ const PatientAnalysis = () => {
                       >
                         <Download className="h-3 w-3 mr-1" />
                         Export Report
-                      </Button>
-                    )}
-                  </div>
-                  
+                    </Button>
+                  )}
+                </div>
+                
                   {!analysis ? (
-                    <div className="text-center py-20 text-muted-foreground">
-                      {isAnalyzing ? (
-                        <div className="space-y-4">
-                          <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
+                  <div className="text-center py-20 text-muted-foreground">
+                    {isAnalyzing ? (
+                      <div className="space-y-4">
+                        <Loader2 className="h-10 w-10 mx-auto animate-spin text-primary" />
                           <p>Analyzing patient data...</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4">
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
                           <Search className="h-10 w-10 mx-auto text-muted-foreground" />
                           <p>Enter patient information to see analysis results</p>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-6 animate-fade-in">
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-6 animate-fade-in">
                       <div className="space-y-4">
                         <div>
                           <h3 className="text-lg font-semibold text-primary mb-2">Diagnosis</h3>
@@ -540,11 +540,11 @@ const PatientAnalysis = () => {
                                 ) : (
                                   <div>{analysis.diagnosis}</div>
                                 )}
-                              </div>
+                            </div>
                             )}
                           </div>
                         </div>
-
+                        
                         <div>
                           <h3 className="text-lg font-semibold text-primary mb-2">Risk Factors</h3>
                           <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -583,7 +583,7 @@ const PatientAnalysis = () => {
                             )}
                           </div>
                         </div>
-
+                        
                         <div>
                           <h3 className="text-lg font-semibold text-primary mb-2">Recommendations</h3>
                           <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -598,16 +598,16 @@ const PatientAnalysis = () => {
                                           Reason: {item.reason}
                                         </div>
                                       )}
-                                    </div>
+                        </div>
                                   ) : (
                                     <div>{item}</div>
                                   )}
-                                </div>
+                      </div>
                               ))
                             ) : (
                               <div>
                                 {typeof analysis.recommendations === 'object' ? (
-                                  <div>
+                        <div>
                                     <div className="font-medium">{analysis.recommendations.recommendation}</div>
                                     {analysis.recommendations.reason && (
                                       <div className="text-sm text-muted-foreground">
@@ -622,7 +622,7 @@ const PatientAnalysis = () => {
                             )}
                           </div>
                         </div>
-
+                        
                         <div>
                           <h3 className="text-lg font-semibold text-primary mb-2">Next Steps</h3>
                           <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -641,7 +641,7 @@ const PatientAnalysis = () => {
                                   ) : (
                                     <div>{item}</div>
                                   )}
-                                </div>
+                        </div>
                               ))
                             ) : (
                               <div>
@@ -660,28 +660,28 @@ const PatientAnalysis = () => {
                               </div>
                             )}
                           </div>
-                        </div>
                       </div>
-                      
+                    </div>
+                    
                       <div className="flex justify-end">
                         <Button 
                           onClick={handleProceedToRecommendations}
                           className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
                           <ArrowRight className="mr-2 h-4 w-4" />
-                          Proceed to Recommendations
-                        </Button>
-                      </div>
+                        Proceed to Recommendations
+                      </Button>
                     </div>
-                  )}
-                </GlassCard>
-              </div>
+                  </div>
+                )}
+              </GlassCard>
             </div>
           </div>
         </div>
-
+        </div>
+      
         <Disclaimer className="mt-16" />
-      </div>
+    </div>
     </PageContainer>
   );
 };

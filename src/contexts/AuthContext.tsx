@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -35,9 +35,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchCurrentUser = async (token: string) => {
     try {
-      const response = await fetch(`${API_URL}/auth/me`, {
+      console.log('Fetching current user from:', `${API_URL}/api/auth/me`);
+      const response = await fetch(`${API_URL}/api/auth/me`, {
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
       });
 
@@ -45,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const userData = await response.json();
         setUser(userData);
       } else {
+        console.error('Failed to fetch user:', response.status, response.statusText);
         localStorage.removeItem('token');
       }
     } catch (error) {
@@ -58,16 +61,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signIn = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/login`, {
+      console.log('Attempting to sign in at:', `${API_URL}/api/auth/login`);
+      const response = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password })
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
@@ -84,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast({
         variant: "destructive",
         title: "Login failed",
-        description: error instanceof Error ? error.message : "Invalid credentials",
+        description: error instanceof Error ? error.message : "Could not connect to the server. Please try again.",
       });
       throw error;
     } finally {
@@ -92,19 +96,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const signUp = async (email: string, password: string, name: string, role: 'patient' | 'doctor' | 'researcher' = 'patient') => {
+  const signUp = async (email: string, password: string, name: string, role: string = 'patient') => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_URL}/auth/register`, {
+      console.log('Attempting to register at:', `${API_URL}/api/auth/register`);
+      const response = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password, name, role })
       });
 
       const data = await response.json();
-
+      
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
       }
@@ -121,7 +126,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       toast({
         variant: "destructive",
         title: "Registration failed",
-        description: error instanceof Error ? error.message : "Could not create account",
+        description: error instanceof Error ? error.message : "Could not connect to the server. Please try again.",
       });
       throw error;
     } finally {
@@ -138,16 +143,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const value = {
-    user,
-    loading,
-    signIn,
-    signUp,
-    signOut
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -159,4 +156,4 @@ export const useAuth = () => {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
-}; 
+};
