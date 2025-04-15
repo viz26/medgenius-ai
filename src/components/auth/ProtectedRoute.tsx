@@ -1,51 +1,45 @@
-
-import { Navigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: 'patient' | 'doctor' | 'researcher';
 }
 
-const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  
+const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
+  children, 
+  requiredRole 
+}) => {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
   useEffect(() => {
-    // Check authentication with server
-    const checkAuth = async () => {
-      try {
-        // In a real implementation, this would be an API call to verify the session
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          return;
-        }
-        
-        // For demo purposes, we're still using localStorage but simulating a token check
-        // In production, this would be a fetch to your authentication endpoint
-        setTimeout(() => {
-          setIsAuthenticated(true);
-          setIsLoading(false);
-        }, 300);
-      } catch (error) {
-        console.error("Auth verification failed:", error);
-        setIsAuthenticated(false);
-        setIsLoading(false);
+    if (!loading) {
+      if (!user) {
+        navigate('/login');
+      } else if (requiredRole && user.role !== requiredRole) {
+        navigate('/settings');
       }
-    };
-    
-    checkAuth();
-  }, []);
-  
-  if (isLoading) {
-    return <div className="h-screen w-screen flex items-center justify-center">Verifying authentication...</div>;
+    }
+  }, [user, loading, requiredRole, navigate]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
   }
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+
+  if (!user) {
+    return null;
   }
-  
+
+  if (requiredRole && user.role !== requiredRole) {
+    return null;
+  }
+
   return <>{children}</>;
 };
 

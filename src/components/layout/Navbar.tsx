@@ -4,13 +4,14 @@ import { cn } from "@/lib/utils";
 import { Menu, X, FlaskConical, HeartPulse, FileText, Beaker, TestTube } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import UserMenu from "@/components/auth/UserMenu";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem('authToken') !== null;
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,7 +69,14 @@ const Navbar = () => {
           </nav>
           
           <div className="flex-shrink-0 w-48 flex justify-end">
-            {isLoggedIn && <UserMenu />}
+            {user ? <UserMenu /> : (
+              <NavLink
+                to="/login"
+                className="flex items-center text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+              >
+                Sign In
+              </NavLink>
+            )}
           </div>
         </div>
 
@@ -107,7 +115,7 @@ const Navbar = () => {
               </NavLink>
             ))}
             
-            {isLoggedIn && (
+            {user ? (
               <>
                 <div className="border-t border-gray-200 my-2"></div>
                 <NavLink
@@ -121,6 +129,14 @@ const Navbar = () => {
                   Settings
                 </NavLink>
               </>
+            ) : (
+              <NavLink
+                to="/login"
+                className="flex items-center py-2 text-base font-medium text-gray-600 hover:text-blue-600 transition-colors animate-slide-in"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign In
+              </NavLink>
             )}
           </div>
         </div>

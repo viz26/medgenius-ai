@@ -1,263 +1,232 @@
-
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from '@/hooks/use-toast';
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
-import { Loader2 } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 
-// Mock credentials for demo purposes
-const DEMO_USER = { email: "demo@example.com", password: "password123" };
-
-const Login = () => {
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
-  const [signupEmail, setSignupEmail] = useState('');
-  const [signupPassword, setSignupPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+export default function Login() {
   const navigate = useNavigate();
+  const { signIn, signUp } = useAuth();
+  const [activeTab, setActiveTab] = useState('login');
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  useEffect(() => {
-    // Check if user is already logged in with a valid token
-    const authToken = localStorage.getItem('authToken');
-    if (authToken) {
-      navigate('/');
-    }
-  }, [navigate]);
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: ''
+  });
+
+  const [registerData, setRegisterData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: '',
+    name: '',
+    role: 'patient'
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
+    setLoading(true);
     try {
-      // In a real implementation, this would be a fetch to your authentication endpoint
-      // For demo purposes, we're simulating an API call
-      // const response = await fetch('/api/auth/login', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: loginEmail, password: loginPassword }),
-      // });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Check credentials against demo user
-      if (loginEmail === DEMO_USER.email && loginPassword === DEMO_USER.password) {
-        // In a real implementation, we would get a token from the server
-        const mockToken = btoa(`${Date.now()}-${loginEmail}`); // not for production use
-        localStorage.setItem('authToken', mockToken);
-        localStorage.setItem('userEmail', loginEmail);
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        navigate('/');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login failed",
-          description: "Invalid email or password. Try demo@example.com / password123",
-        });
-      }
+      await signIn(loginData.email, loginData.password);
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      toast({
-        variant: "destructive",
-        title: "Login error",
-        description: "An error occurred during login. Please try again.",
-      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleSignup = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
     
-    // Validate passwords match
-    if (signupPassword !== confirmPassword) {
+    if (registerData.password !== registerData.confirmPassword) {
       toast({
         variant: "destructive",
-        title: "Passwords don't match",
-        description: "Please make sure both passwords match.",
+        title: "Registration failed",
+        description: "Passwords do not match",
       });
-      setIsLoading(false);
       return;
     }
-    
+
+    setLoading(true);
     try {
-      // In a real implementation, this would be a fetch to your registration endpoint
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ email: signupEmail, password: signupPassword }),
-      // });
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create mock token for demonstration
-      const mockToken = btoa(`${Date.now()}-${signupEmail}`); // not for production use
-      localStorage.setItem('authToken', mockToken);
-      localStorage.setItem('userEmail', signupEmail);
-      
-      toast({
-        title: "Account created",
-        description: "Welcome to MedAI!",
-      });
-      navigate('/');
+      await signUp(registerData.email, registerData.password, registerData.name, registerData.role);
+      navigate('/dashboard');
     } catch (error) {
-      console.error('Signup error:', error);
-      toast({
-        variant: "destructive",
-        title: "Signup error",
-        description: "An error occurred during account creation. Please try again.",
-      });
+      console.error('Registration error:', error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
-      
-      <main className="flex-grow pt-24 px-6 md:px-12 flex items-center justify-center">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Welcome to MedAI</h1>
-            <p className="text-muted-foreground mt-2">Sign in to access your medical AI assistant</p>
-          </div>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Authentication</CardTitle>
-              <CardDescription>Login or create an account to continue</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Tabs defaultValue="login">
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="login">Login</TabsTrigger>
-                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
-                </TabsList>
-                
-                <TabsContent value="login">
-                  <form onSubmit={handleLogin} className="space-y-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="email">
-                        Email
-                      </label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="password">
-                        Password
-                      </label>
-                      <Input
-                        id="password"
-                        type="password"
-                        placeholder="••••••••"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div className="text-sm text-muted-foreground">
-                      Demo credentials: demo@example.com / password123
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Logging in...
-                        </>
-                      ) : "Login"}
-                    </Button>
-                  </form>
-                </TabsContent>
-                
-                <TabsContent value="signup">
-                  <form onSubmit={handleSignup} className="space-y-4 mt-4">
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="signup-email">
-                        Email
-                      </label>
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="you@example.com"
-                        value={signupEmail}
-                        onChange={(e) => setSignupEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="signup-password">
-                        Password
-                      </label>
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="Create a password"
-                        value={signupPassword}
-                        onChange={(e) => setSignupPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <div>
-                      <label className="block text-sm font-medium mb-1" htmlFor="confirm-password">
-                        Confirm Password
-                      </label>
-                      <Input
-                        id="confirm-password"
-                        type="password"
-                        placeholder="Confirm your password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                    
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                          Creating Account...
-                        </>
-                      ) : "Create Account"}
-                    </Button>
-                  </form>
-                </TabsContent>
-              </Tabs>
-            </CardContent>
-            <CardFooter className="flex justify-center text-sm text-muted-foreground">
-              Secure, AI-powered medical platform
-            </CardFooter>
-          </Card>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            {activeTab === 'login' ? 'Sign in to your account' : 'Create a new account'}
+          </h2>
         </div>
-      </main>
-      
-      <Footer />
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="register">Register</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="login">
+            <form className="mt-8 space-y-6" onSubmit={handleLogin}>
+              <div className="rounded-md shadow-sm space-y-4">
+                <div>
+                  <Label htmlFor="email">Email address</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    required
+                    value={loginData.email}
+                    onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="Email address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={loginData.password}
+                      onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      placeholder="Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <Button
+                  type="submit"
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={loading}
+                >
+                  {loading ? 'Signing in...' : 'Sign in'}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="register">
+            <form className="mt-8 space-y-6" onSubmit={handleRegister}>
+              <div className="rounded-md shadow-sm space-y-4">
+                <div>
+                  <Label htmlFor="register-email">Email address</Label>
+                  <Input
+                    id="register-email"
+                    type="email"
+                    required
+                    value={registerData.email}
+                    onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="Email address"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="register-name">Full Name</Label>
+                  <Input
+                    id="register-name"
+                    type="text"
+                    required
+                    value={registerData.name}
+                    onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="register-password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="register-password"
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={registerData.password}
+                      onChange={(e) => setRegisterData({ ...registerData, password: e.target.value })}
+                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      placeholder="Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="register-confirm-password">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="register-confirm-password"
+                      type={showConfirmPassword ? "text" : "password"}
+                      required
+                      value={registerData.confirmPassword}
+                      onChange={(e) => setRegisterData({ ...registerData, confirmPassword: e.target.value })}
+                      className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                      placeholder="Confirm Password"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                    >
+                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="register-role">Role</Label>
+                  <select
+                    id="register-role"
+                    value={registerData.role}
+                    onChange={(e) => setRegisterData({ ...registerData, role: e.target.value as 'patient' | 'doctor' | 'researcher' })}
+                    className="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+                  >
+                    <option value="patient">Patient</option>
+                    <option value="doctor">Doctor</option>
+                    <option value="researcher">Researcher</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <Button
+                  type="submit"
+                  className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  disabled={loading}
+                >
+                  {loading ? 'Creating account...' : 'Create account'}
+                </Button>
+              </div>
+            </form>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
-};
-
-export default Login;
+}
