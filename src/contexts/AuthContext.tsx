@@ -18,7 +18,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = import.meta.env.VITE_API_URL;
+// Remove VITE_API_URL= from the string
+const API_URL = import.meta.env.VITE_API_URL?.replace('VITE_API_URL=', '') || 'https://medgenius-ai-production.up.railway.app';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -43,13 +44,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
 
-      if (response.ok) {
-        const userData = await response.json();
-        setUser(userData);
-      } else {
-        console.error('Failed to fetch user:', response.status, response.statusText);
-        localStorage.removeItem('token');
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const userData = await response.json();
+      setUser(userData);
     } catch (error) {
       console.error('Error fetching user:', error);
       localStorage.removeItem('token');
@@ -70,12 +70,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ email, password })
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
+      const data = await response.json();
       localStorage.setItem('token', data.token);
       setUser(data.user);
       
@@ -108,12 +108,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ email, password, name, role })
       });
 
-      const data = await response.json();
-      
       if (!response.ok) {
-        throw new Error(data.message || 'Registration failed');
+        const errorData = await response.json().catch(() => ({ message: 'Failed to parse error response' }));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
       }
 
+      const data = await response.json();
       localStorage.setItem('token', data.token);
       setUser(data.user);
       

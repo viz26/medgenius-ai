@@ -8,10 +8,12 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: ['https://medgenius-ai-pied.vercel.app', 'http://localhost:8082', 'http://localhost:5173', 'http://localhost:3000'],
-  credentials: true,
+  origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
 app.use(express.json());
