@@ -1,7 +1,6 @@
-
-import { useState } from "react";
-import Navbar from "@/components/layout/Navbar";
+import * as React from "react";
 import Footer from "@/components/layout/Footer";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -23,8 +22,6 @@ const Security = () => {
 
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
-      
       <main className="flex-grow pt-24 px-6 md:px-12">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">

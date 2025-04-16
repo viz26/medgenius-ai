@@ -14,6 +14,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Disclaimer } from "@/components/ui/Disclaimer";
 import { useAuth } from "@/contexts/AuthContext";
+import { DrugStats } from "@/components/DrugStats";
 
 const DrugRecommendation = () => {
   const [patientInfo, setPatientInfo] = useState("");
@@ -47,9 +48,17 @@ const DrugRecommendation = () => {
     const storedData = localStorage.getItem('patientAnalysis');
     if (storedData) {
       try {
-        const { patientInfo: storedPatientInfo } = JSON.parse(storedData);
-        if (storedPatientInfo) {
-          setPatientInfo(storedPatientInfo);
+        const parsedData = JSON.parse(storedData);
+        if (parsedData.patientInfo) {
+          // Extract the patient data string instead of the whole object
+          if (parsedData.patientInfo.patientData) {
+            setPatientInfo(parsedData.patientInfo.patientData);
+          } else {
+            // Handle the case where patientData isn't a nested property
+            setPatientInfo(typeof parsedData.patientInfo === 'string' 
+              ? parsedData.patientInfo 
+              : JSON.stringify(parsedData.patientInfo));
+          }
           setActiveTab("patient");
         }
       } catch (error) {
@@ -324,10 +333,10 @@ const DrugRecommendation = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
-            Drug Recommendation
+            Drug Recommendation Analysis
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Get personalized drug recommendations based on patient information or specific diseases.
+          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            Use our advanced AI technology to get personalized drug recommendations based on patient information or specific diseases. Our system analyzes medical data to provide tailored medication options.
           </p>
         </div>
 
@@ -407,19 +416,25 @@ const DrugRecommendation = () => {
             </GlassCard>
           </div>
 
-          <div className="animate-slide-up" style={{ animationDelay: "0.2s" }}>
+          <div className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
+            {recommendations && recommendations.length > 0 ? (
+              <DrugStats drugName={recommendations[0].drugName} />
+            ) : null}
+          </div>
+
+          <div className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
             <GlassCard className="h-full">
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold">Drug Recommendations</h2>
                 {recommendations && (
                   <Button
-                    variant="outline"
+                    variant="default"
                     size="sm"
                     onClick={generatePDF}
-                    className="text-xs"
+                    className="text-xs shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-[1px] font-semibold"
                   >
                     <Download className="h-3 w-3 mr-1" />
-                    Export Report
+                    Download PDF
                   </Button>
                 )}
               </div>
@@ -443,7 +458,7 @@ const DrugRecommendation = () => {
                   {Array.isArray(recommendations) ? (
                     <>
                       {recommendations.map((rec: any, index: number) => (
-                        <div key={index} className="bg-white rounded-lg p-6 shadow-sm">
+                        <div key={index} className="bg-blue-50/50 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-blue-100">
                           <h3 className="text-lg font-semibold text-primary mb-3">{rec.drugName}</h3>
                           <div className="space-y-3">
                             <div>
@@ -460,7 +475,7 @@ const DrugRecommendation = () => {
                       ))}
 
                       {/* Drug Interactions Section */}
-                      <div className="bg-white rounded-lg p-6 shadow-sm border border-yellow-200">
+                      <div className="bg-yellow-50/70 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-yellow-200">
                         <h3 className="text-lg font-semibold text-yellow-600 mb-4 flex items-center gap-2">
                           <AlertTriangle className="h-5 w-5" />
                           Potential Drug Interactions
@@ -472,7 +487,7 @@ const DrugRecommendation = () => {
                           
                           <div className="space-y-3">
                             {recommendations.length > 1 && (
-                              <div className="bg-yellow-50 p-4 rounded-lg">
+                              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                                 <h4 className="font-medium text-yellow-800 mb-2">
                                   {recommendations[0].drugName} + {recommendations[1].drugName}
                                 </h4>
@@ -484,7 +499,7 @@ const DrugRecommendation = () => {
                             )}
                             
                             {recommendations.length > 2 && (
-                              <div className="bg-yellow-50 p-4 rounded-lg">
+                              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                                 <h4 className="font-medium text-yellow-800 mb-2">
                                   {recommendations[1].drugName} + {recommendations[2].drugName}
                                 </h4>
@@ -496,7 +511,7 @@ const DrugRecommendation = () => {
                             )}
                           </div>
 
-                          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                          <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-100">
                             <h4 className="font-medium text-blue-800 mb-2">Important Notes:</h4>
                             <ul className="list-disc list-inside text-sm text-blue-700 space-y-1">
                               <li>Always inform your healthcare provider about all medications you are taking</li>
@@ -509,7 +524,7 @@ const DrugRecommendation = () => {
                       </div>
                     </>
                   ) : (
-                    <div className="bg-white rounded-lg p-6 shadow-sm">
+                    <div className="bg-blue-50/50 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-blue-100">
                       <h3 className="text-lg font-semibold text-primary mb-3">{recommendations.drugName}</h3>
                       <div className="space-y-3">
                         <div>
@@ -529,49 +544,6 @@ const DrugRecommendation = () => {
             </GlassCard>
           </div>
         </div>
-
-        {recommendations && (
-          <div className="mt-12">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-900">Recommendations</h2>
-              <Button
-                onClick={generatePDF}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {recommendations.map((rec: any, index: number) => (
-                <GlassCard key={index} className="p-6">
-                  <div className="flex items-center mb-4">
-                    <Pill className="h-6 w-6 text-blue-600 mr-2" />
-                    <h3 className="text-xl font-semibold">{rec.drugName}</h3>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Dosage</h4>
-                      <p className="mt-1">{rec.dosage}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Side Effects</h4>
-                      <p className="mt-1">{rec.sideEffects}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Precautions</h4>
-                      <p className="mt-1">{rec.precautions}</p>
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-500">Reason</h4>
-                      <p className="mt-1">{rec.reason}</p>
-                    </div>
-                  </div>
-                </GlassCard>
-              ))}
-            </div>
-          </div>
-        )}
 
         <Disclaimer className="mt-16" />
       </div>

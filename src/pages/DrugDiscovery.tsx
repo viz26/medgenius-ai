@@ -22,6 +22,7 @@ import {
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Disclaimer } from "@/components/ui/Disclaimer";
+import ActivityService from "@/services/ActivityService";
 
 interface PubChemCompound {
   CID: string;
@@ -82,12 +83,28 @@ const DrugDiscovery = () => {
       };
 
       setPubchemData(compound);
+      
+      // Track the successful search activity
+      ActivityService.addActivity(
+        'search', 
+        `Searched for drug compound: ${query}`, 
+        `Found compound with CID: ${cid}`
+      );
+      
       toast({
         title: "Found compound",
         description: `Successfully retrieved data for ${query}`,
       });
     } catch (error) {
       console.error('Error searching PubChem:', error);
+      
+      // Track the failed search activity
+      ActivityService.addActivity(
+        'search', 
+        `Search failed for drug compound: ${query}`, 
+        `Error: Compound not found`
+      );
+      
       toast({
         variant: "destructive",
         title: "Search failed",
@@ -228,6 +245,13 @@ const DrugDiscovery = () => {
       // Save the PDF
       pdf.save(`${searchQuery.toLowerCase()}-report.pdf`);
       
+      // Track the PDF generation activity
+      ActivityService.addActivity(
+        'download', 
+        `Generated report for drug compound: ${searchQuery}`, 
+        `Molecular formula: ${pubchemData.molecularFormula}`
+      );
+      
       toast({
         title: "Report Generated",
         description: "Your compound report has been downloaded successfully.",
@@ -244,7 +268,7 @@ const DrugDiscovery = () => {
 
   return (
     <PageContainer>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
             Drug Discovery Analysis
@@ -254,15 +278,8 @@ const DrugDiscovery = () => {
           </p>
         </div>
 
-        <div className="container mx-auto px-4 py-8">
-          <div className="max-w-4xl mx-auto space-y-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-4">Drug Discovery Analysis</h1>
-              <p className="text-gray-600">
-                Analyze molecular compounds and explore potential drug candidates using AI.
-              </p>
-            </div>
-
+        <div className="py-8">
+          <div className="max-w-5xl mx-auto space-y-8">
             <Card className="p-6">
               <div className="space-y-8">
                 {/* Search Section */}
@@ -277,6 +294,8 @@ const DrugDiscovery = () => {
                     <Button 
                       onClick={() => searchPubChem(searchQuery)}
                       disabled={isLoading || !searchQuery.trim()}
+                      variant="default"
+                      className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-[1px] font-semibold"
                     >
                       {isLoading ? (
                         <>

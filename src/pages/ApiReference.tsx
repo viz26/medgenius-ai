@@ -1,13 +1,9 @@
 import * as React from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { Code, Database, Lock, Zap, Terminal, Webhook } from "lucide-react";
 
 const ApiReference = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
-      
       <main className="container mx-auto px-4 pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-8">API Reference</h1>
@@ -138,8 +134,6 @@ const ApiReference = () => {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };

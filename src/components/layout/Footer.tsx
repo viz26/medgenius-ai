@@ -1,7 +1,14 @@
 import { FlaskConical, Github, Twitter, Linkedin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Footer = () => {
+  const navigate = useNavigate();
+
+  const handleAboutClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    navigate('/about');
+  };
+
   return (
     <footer className="bg-gray-50 border-t border-gray-200 py-12 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
@@ -54,6 +61,16 @@ const Footer = () => {
                 <li>
                   <Link to="/api-reference" className="text-gray-600 text-sm hover:text-blue-600 transition-colors">
                     API Reference
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/about" className="text-gray-600 text-sm hover:text-blue-600 transition-colors">
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/contact" className="text-gray-600 text-sm hover:text-blue-600 transition-colors">
+                    Contact Us
                   </Link>
                 </li>
               </ul>

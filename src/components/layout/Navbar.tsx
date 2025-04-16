@@ -1,147 +1,123 @@
-import { useState, useEffect } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
-import { cn } from "@/lib/utils";
-import { Menu, X, FlaskConical, HeartPulse, FileText, Beaker, TestTube } from "lucide-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import UserMenu from "@/components/auth/UserMenu";
-import { useAuth } from "@/contexts/AuthContext";
+import React from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu';
+import { User, LogOut, Menu, LayoutDashboard, Settings } from 'lucide-react';
 
-const Navbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const isMobile = useIsMobile();
+export const Navbar = () => {
+  const { user, logout } = useAuth();
+  const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  // Don't show navbar on login page
+  if (location.pathname === '/' || location.pathname === '/login') {
+    return null;
+  }
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-  const navLinks = [
-    { name: "Home", path: "/", icon: <HeartPulse className="mr-2 h-4 w-4" /> },
-    { name: "Patient Analysis", path: "/patient-analysis", icon: <FileText className="mr-2 h-4 w-4" /> },
-    { name: "Drug Recommendation", path: "/drug-recommendation", icon: <FlaskConical className="mr-2 h-4 w-4" /> },
-    { name: "Drug Discovery", path: "/drug-discovery", icon: <Beaker className="mr-2 h-4 w-4" /> },
-    { name: "Side Effects", path: "/side-effects", icon: <HeartPulse className="mr-2 h-4 w-4" /> },
-  ];
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
 
   return (
-    <header
-      className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300 py-4 px-6 md:px-12",
-        isScrolled ? "backdrop-blur-lg bg-white/70 shadow-sm" : "bg-transparent"
-      )}
-    >
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex-shrink-0 w-48">
-          <NavLink 
-            to="/" 
-            className="flex items-center gap-2 font-semibold text-xl"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            <FlaskConical className="h-6 w-6 text-blue-600" />
-            <span className="font-semibold tracking-tight text-gray-900">MedGenius AI</span>
-          </NavLink>
-        </div>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center h-16">
+          <div className="flex items-center">
+            <Link to={user ? "/home" : "/"} className="flex items-center">
+              <h1 className="text-2xl font-bold tracking-tight">
+                <span className="text-gray-900">Med</span>
+                <span className="text-blue-600">Genius</span>
+                <span className="text-gray-900">AI</span>
+              </h1>
+            </Link>
 
-        {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center justify-between flex-1 mx-8">
-          <nav className="flex items-center justify-center space-x-8 flex-1">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={({ isActive }) => cn(
-                  "flex items-center text-sm font-medium transition-colors hover:text-blue-600 whitespace-nowrap",
-                  isActive ? "text-blue-600" : "text-gray-600"
-                )}
-              >
-                {link.name}
-              </NavLink>
-            ))}
-          </nav>
-          
-          <div className="flex-shrink-0 w-48 flex justify-end">
-            {user ? <UserMenu /> : (
-              <NavLink
-                to="/login"
-                className="flex items-center text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
-              >
-                Sign In
-              </NavLink>
+            {user && (
+              <div className="hidden sm:flex sm:ml-8 sm:space-x-4">
+                <Link
+                  to="/home"
+                  className="text-blue-600 hover:text-white hover:bg-blue-600 inline-flex items-center px-4 py-2 text-base font-medium transition-colors rounded-lg border-2 border-blue-600"
+                >
+                  Home
+                </Link>
+                <Link
+                  to="/patient-analysis"
+                  className="text-blue-600 hover:text-white hover:bg-blue-600 inline-flex items-center px-4 py-2 text-base font-medium transition-colors rounded-lg border-2 border-blue-600"
+                >
+                  Patient Analysis
+                </Link>
+                <Link
+                  to="/drug-recommendation"
+                  className="text-blue-600 hover:text-white hover:bg-blue-600 inline-flex items-center px-4 py-2 text-base font-medium transition-colors rounded-lg border-2 border-blue-600"
+                >
+                  Drug Recommendation
+                </Link>
+                <Link
+                  to="/drug-discovery"
+                  className="text-blue-600 hover:text-white hover:bg-blue-600 inline-flex items-center px-4 py-2 text-base font-medium transition-colors rounded-lg border-2 border-blue-600"
+                >
+                  Drug Discovery
+                </Link>
+                <Link
+                  to="/side-effects"
+                  className="text-blue-600 hover:text-white hover:bg-blue-600 inline-flex items-center px-4 py-2 text-base font-medium transition-colors rounded-lg border-2 border-blue-600"
+                >
+                  Side Effects
+                </Link>
+              </div>
             )}
           </div>
-        </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex-shrink-0 md:hidden">
-          <button
-            className="focus:outline-none text-gray-900"
-            onClick={toggleMenu}
-            aria-label="Toggle menu"
-          >
-            {isMenuOpen ? (
-              <X className="h-6 w-6" />
-            ) : (
-              <Menu className="h-6 w-6" />
+          <div className="flex items-center">
+            {user && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-12 w-12 rounded-full border-2 border-blue-600 hover:bg-blue-50">
+                    <User className="h-6 w-6 text-blue-600" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem onClick={() => navigate('/dashboard')}>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate('/settings')}>
+                    <Settings className="mr-2 h-4 w-4" />
+                    <span>Settings</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleLogout} className="text-red-600 hover:text-red-700 focus:text-red-700 focus:bg-red-50">
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
-          </button>
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="sm:hidden">
+            <Button variant="ghost" className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary">
+              <Menu className="h-6 w-6" />
+            </Button>
+          </div>
         </div>
       </div>
-
-      {/* Mobile Navigation */}
-      {isMobile && isMenuOpen && (
-        <div className="absolute top-full left-0 w-full bg-white/90 backdrop-blur-lg shadow-lg animate-fade-in">
-          <div className="flex flex-col p-6 space-y-4 stagger-animation">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.path}
-                to={link.path}
-                className={({ isActive }) => cn(
-                  "flex items-center py-2 text-base font-medium transition-colors hover:text-blue-600 animate-slide-in",
-                  isActive ? "text-blue-600" : "text-gray-600"
-                )}
-                onClick={() => setIsMenuOpen(false)}
-              >
-                {link.icon}
-                {link.name}
-              </NavLink>
-            ))}
-            
-            {user ? (
-              <>
-                <div className="border-t border-gray-200 my-2"></div>
-                <NavLink
-                  to="/settings"
-                  className={({ isActive }) => cn(
-                    "flex items-center py-2 text-base font-medium transition-colors hover:text-blue-600 animate-slide-in",
-                    isActive ? "text-blue-600" : "text-gray-600"
-                  )}
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  Settings
-                </NavLink>
-              </>
-            ) : (
-              <NavLink
-                to="/login"
-                className="flex items-center py-2 text-base font-medium text-gray-600 hover:text-blue-600 transition-colors animate-slide-in"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Sign In
-              </NavLink>
-            )}
-          </div>
-        </div>
-      )}
-    </header>
+    </nav>
   );
 };
 

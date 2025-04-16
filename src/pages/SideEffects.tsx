@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { fetchOpenAI, parseAIResponse } from "@/utils/apiService";
 import jsPDF from 'jspdf';
 import { Disclaimer } from "@/components/ui/Disclaimer";
+import ActivityService from "@/services/ActivityService";
 
 const SideEffects = () => {
   const [drugName, setDrugName] = useState("");
@@ -130,6 +131,14 @@ const SideEffects = () => {
         setSideEffects(Array.isArray(result) ? result : []);
         setShowResults(true);
         setProgress(100);
+        
+        // Track the side effects prediction
+        ActivityService.addActivity(
+          'analysis',
+          `Side effects analysis for ${drugName}`,
+          `Found ${Array.isArray(result) ? result.length : 0} potential side effects`
+        );
+        
         toast({
           title: "Analysis complete",
           description: "Drug information and side effect analysis has been completed successfully.",
@@ -139,6 +148,14 @@ const SideEffects = () => {
       }
     } catch (error) {
       console.error("Error in prediction:", error);
+      
+      // Track the failed analysis
+      ActivityService.addActivity(
+        'analysis',
+        `Failed side effects analysis for ${drugName}`,
+        `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      
       toast({
         title: "Error",
         description: "An error occurred during the analysis. Please try again.",
@@ -163,6 +180,7 @@ const SideEffects = () => {
     setIsLoading(true);
     setProgress(0);
     setInteractions([]);
+    setShowResults(false);
     
     const interval = setInterval(() => {
       setProgress(prev => Math.min(90, prev + 10));
@@ -203,9 +221,18 @@ const SideEffects = () => {
 
       if (response?.choices?.[0]?.message?.content) {
         const result = parseAIResponse(response.choices[0].message.content);
-        setInteractions(Array.isArray(result) ? result : []);
+        console.log("Interaction results:", result);
+        setInteractions(Array.isArray(result) ? result : [result]);
         setShowResults(true);
         setProgress(100);
+        
+        // Track the interaction check
+        ActivityService.addActivity(
+          'analysis',
+          `Drug interaction check: ${interactionDrugs[0]} + ${interactionDrugs[1]}`,
+          `Found ${Array.isArray(result) ? result.length : 1} interaction(s)`
+        );
+        
         toast({
           title: "Interaction check complete",
           description: "Drug interaction analysis has been completed successfully.",
@@ -215,10 +242,18 @@ const SideEffects = () => {
       }
     } catch (error) {
       console.error("Error in interaction check:", error);
+      
+      // Track the failed interaction check
+      ActivityService.addActivity(
+        'analysis',
+        `Failed drug interaction check: ${interactionDrugs[0]} + ${interactionDrugs[1]}`,
+        `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+      
       toast({
+        variant: "destructive",
         title: "Error",
         description: "An error occurred during the interaction check. Please try again.",
-        variant: "destructive",
       });
     } finally {
       clearInterval(interval);
@@ -381,6 +416,13 @@ const SideEffects = () => {
       
       pdf.save(fileName);
       
+      // Track the PDF generation
+      ActivityService.addActivity(
+        'download',
+        `Generated report: ${activeTab === 'side-effects' ? drugName : `${interactionDrugs[0]} + ${interactionDrugs[1]}`}`,
+        `Report type: ${activeTab === 'side-effects' ? 'Side Effects' : 'Drug Interactions'}`
+      );
+      
       toast({
         title: "Report Generated",
         description: "Your analysis report has been downloaded successfully.",
@@ -404,10 +446,10 @@ const SideEffects = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
-            Side Effects Analysis
+            Drug Side Effects Analysis
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Analyze potential side effects and drug interactions to ensure safe medication use.
+            Analyze potential side effects and interactions between medications using advanced AI technology.
           </p>
         </div>
 
@@ -626,7 +668,7 @@ const SideEffects = () => {
                   {activeTab === "side-effects" && sideEffects.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {sideEffects.map((effect, index) => (
-                        <GlassCard key={index} className="p-6 hover:shadow-md transition-shadow">
+                        <GlassCard key={index} className="p-6 hover:shadow-md transition-shadow bg-blue-50/50 border border-blue-100">
                           <div className="flex items-start gap-4">
                             <div className={`rounded-full p-2 ${
                               effect.probability > 0.6 
@@ -666,7 +708,7 @@ const SideEffects = () => {
                   {activeTab === "interactions" && interactions.length > 0 && (
                     <div className="space-y-6">
                       {interactions.map((interaction, index) => (
-                        <GlassCard key={index} className="p-6 hover:shadow-md transition-shadow">
+                        <GlassCard key={index} className="p-6 hover:shadow-md transition-shadow bg-blue-50/50 border border-blue-100">
                           <div className="flex items-start gap-4">
                             <div className={`rounded-full p-2 ${
                               interaction.severity === "Severe" 
@@ -692,14 +734,36 @@ const SideEffects = () => {
                                   {interaction.severity}
                                 </span>
                               </div>
-                              <p className="text-sm text-muted-foreground mb-3">
-                                {interaction.effect}
-                              </p>
-                              <div className="bg-blue-50 p-3 rounded-lg flex gap-3">
-                                <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                                <p className="text-sm text-blue-800">
-                                  <span className="font-medium">Recommendation:</span> {interaction.recommendation}
-                                </p>
+                              
+                              <div className="space-y-4">
+                                <div>
+                                  <p className="text-sm text-muted-foreground">
+                                    <span className="font-medium">Effect:</span> {interaction.effect}
+                                  </p>
+                                </div>
+                                
+                                {interaction.mechanism && (
+                                  <div className="bg-blue-50/50 p-3 rounded-lg">
+                                    <p className="text-sm text-blue-800">
+                                      <span className="font-medium">Mechanism of Action:</span> {interaction.mechanism}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {interaction.evidence && (
+                                  <div className="bg-purple-50/50 p-3 rounded-lg">
+                                    <p className="text-sm text-purple-800">
+                                      <span className="font-medium">Evidence:</span> {interaction.evidence}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                <div className="bg-blue-50 p-3 rounded-lg flex gap-3">
+                                  <CheckCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                                  <p className="text-sm text-blue-800">
+                                    <span className="font-medium">Recommendation:</span> {interaction.recommendation}
+                                  </p>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -712,7 +776,7 @@ const SideEffects = () => {
             )}
           </div>
         </div>
-
+        
         <Disclaimer className="mt-16" />
       </div>
     </PageContainer>

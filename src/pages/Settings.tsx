@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import PageContainer from '../components/layout/PageContainer';
-import { Card } from '../components/ui/card';
-import { Switch } from '../components/ui/switch';
-import { Button } from '../components/ui/button';
-import { toast } from 'sonner';
-import { UserRole } from '../types/auth';
+import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { toast } from '@/hooks/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import {
   User,
   Settings as SettingsIcon,
@@ -15,13 +16,25 @@ import {
   UserCog,
   AlertTriangle
 } from 'lucide-react';
+import PageContainer from '@/components/layout/PageContainer';
 
 export default function Settings() {
   const { user, updateUserRole, updateUserSettings, signOut, clearHistory } = useAuth();
+  const navigate = useNavigate();
+  const [settings, setSettings] = useState({
+    notifications: true,
+    darkMode: false,
+    language: 'en',
+    timezone: 'UTC',
+  });
   const [isClearing, setIsClearing] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
 
-  if (!user) return null;
+  useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
 
   const handleRoleChange = async (role: UserRole) => {
     try {
@@ -32,12 +45,20 @@ export default function Settings() {
     }
   };
 
-  const handleSettingChange = async (key: keyof typeof user.settings, value: boolean) => {
+  const handleSettingChange = async (key: string, value: any) => {
     try {
+      setSettings(prev => ({ ...prev, [key]: value }));
       await updateUserSettings({ [key]: value });
-      toast.success('Settings updated');
+      toast({
+        title: 'Success',
+        description: 'Settings updated successfully.',
+      });
     } catch (error) {
-      toast.error('Failed to update settings');
+      toast({
+        title: 'Error',
+        description: 'Failed to update settings.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -64,131 +85,97 @@ export default function Settings() {
     }
   };
 
+  if (!user) {
+    return null;
+  }
+
   return (
     <PageContainer>
-      <div className="max-w-4xl mx-auto space-y-6 py-8">
-        <h1 className="text-3xl font-bold">Settings</h1>
-        
-        {/* Profile Section */}
-        <Card className="p-6">
-          <div className="flex items-center space-x-4">
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="Profile" className="w-16 h-16 rounded-full" />
-            ) : (
-              <User className="w-16 h-16 p-4 bg-gray-100 rounded-full" />
-            )}
-            <div>
-              <h2 className="text-xl font-semibold">{user.displayName || 'User'}</h2>
-              <p className="text-gray-500">{user.email}</p>
-            </div>
-          </div>
-        </Card>
-
-        {/* Role Selection */}
-        <Card className="p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <UserCog className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">Role</h2>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {(['patient', 'doctor', 'researcher'] as const).map((role) => (
-              <button
-                key={role}
-                onClick={() => handleRoleChange(role)}
-                className={`p-4 rounded-lg border transition-colors ${
-                  user.role === role
-                    ? 'border-primary bg-primary/10'
-                    : 'border-gray-200 hover:border-primary/50'
-                }`}
-              >
-                <p className="font-medium capitalize">{role}</p>
-              </button>
-            ))}
-          </div>
-        </Card>
-
-        {/* Settings */}
-        <Card className="p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <SettingsIcon className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">Preferences</h2>
-          </div>
+      <div className="px-4 py-6">
+        <div className="max-w-3xl mx-auto">
+          <h1 className="text-3xl font-bold text-gray-900 mb-8">Settings</h1>
+          
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <div className="text-sm font-medium">Smart Suggestions</div>
-                <div className="text-sm text-gray-500">
-                  Enable AI-powered suggestions based on your usage
+            {/* Account Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Account Settings</CardTitle>
+                <CardDescription>Manage your account preferences and security settings</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input id="email" type="email" value={user.email} disabled />
                 </div>
-              </div>
-              <Switch
-                checked={user.settings?.smartSuggestions ?? false}
-                onCheckedChange={(checked) =>
-                  handleSettingChange('smartSuggestions', checked)
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <div className="text-sm font-medium">Email Summaries</div>
-                <div className="text-sm text-gray-500">
-                  Receive weekly summaries of your activity
+                <div className="space-y-2">
+                  <Label htmlFor="role">Role</Label>
+                  <Input id="role" value={user.role} disabled />
                 </div>
-              </div>
-              <Switch
-                checked={user.settings?.emailSummaries ?? false}
-                onCheckedChange={(checked) =>
-                  handleSettingChange('emailSummaries', checked)
-                }
-              />
+              </CardContent>
+            </Card>
+
+            {/* Notification Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Settings</CardTitle>
+                <CardDescription>Configure how you receive updates and alerts</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Push Notifications</Label>
+                    <p className="text-sm text-gray-500">Receive notifications for important updates</p>
+                  </div>
+                  <Switch
+                    checked={settings.notifications}
+                    onCheckedChange={(checked) => 
+                      handleSettingChange('notifications', checked)
+                    }
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Email Updates</Label>
+                    <p className="text-sm text-gray-500">Get regular updates via email</p>
+                  </div>
+                  <Switch
+                    checked={settings.emailUpdates}
+                    onCheckedChange={(checked) =>
+                      handleSettingChange('emailUpdates', checked)
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Display Settings */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Display Settings</CardTitle>
+                <CardDescription>Customize your application appearance</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label>Dark Mode</Label>
+                    <p className="text-sm text-gray-500">Switch between light and dark themes</p>
+                  </div>
+                  <Switch
+                    checked={settings.darkMode}
+                    onCheckedChange={(checked) => 
+                      handleSettingChange('darkMode', checked)
+                    }
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Save Button */}
+            <div className="flex justify-end">
+              <Button>Save Changes</Button>
             </div>
           </div>
-        </Card>
-
-        {/* Actions */}
-        <Card className="p-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <Bell className="w-5 h-5" />
-            <h2 className="text-lg font-semibold">Actions</h2>
-          </div>
-          <div className="space-y-4">
-            <Button
-              variant="outline"
-              className="w-full justify-start"
-              onClick={handleClearHistory}
-              disabled={isClearing}
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Clear Search History
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
-              onClick={handleSignOut}
-              disabled={isSigningOut}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Sign Out
-            </Button>
-          </div>
-        </Card>
-
-        {/* Disclaimer */}
-        <Card className="p-6 bg-yellow-50">
-          <div className="flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-1" />
-            <div className="space-y-2">
-              <p className="text-sm font-medium text-yellow-800">
-                Educational Platform Disclaimer
-              </p>
-              <p className="text-sm text-yellow-700">
-                This platform is for educational purposes only. Always consult with healthcare
-                professionals for medical advice. The AI suggestions and analysis provided
-                are meant to assist, not replace, professional medical judgment.
-              </p>
-            </div>
-          </div>
-        </Card>
+        </div>
       </div>
     </PageContainer>
   );

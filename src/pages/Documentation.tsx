@@ -1,16 +1,15 @@
 import * as React from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
 import { FileText, Code, Zap, Shield, Book, Terminal } from "lucide-react";
 
 const Documentation = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <Navbar />
-      
       <main className="container mx-auto px-4 pt-28 pb-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold tracking-tight text-gray-900 mb-8">Documentation</h1>
+          <div className="flex items-center gap-4 mb-8">
+            <Book className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Documentation</h1>
+          </div>
           
           {/* Introduction */}
           <section className="mb-12">
@@ -60,6 +59,21 @@ const Documentation = () => {
                   <li>Known drug interactions</li>
                   <li>Patient-specific factors</li>
                   <li>Treatment effectiveness data</li>
+                </ul>
+              </div>
+
+              <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-100">
+                <h3 className="text-xl font-medium text-gray-900 mb-3">Drug Discovery</h3>
+                <p className="text-gray-600 mb-4">
+                  Our AI-powered drug discovery system provides:
+                </p>
+                <ul className="list-disc list-inside text-gray-600 space-y-2">
+                  <li>Molecular structure analysis</li>
+                  <li>Potential drug target identification</li>
+                  <li>Drug-likeness prediction</li>
+                  <li>ADME (Absorption, Distribution, Metabolism, Excretion) properties</li>
+                  <li>Novel compound generation</li>
+                  <li>Structure-activity relationship analysis</li>
                 </ul>
               </div>
 
@@ -120,8 +134,6 @@ const Documentation = () => {
           </section>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 };
