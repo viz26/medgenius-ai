@@ -14,7 +14,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { Disclaimer } from "@/components/ui/Disclaimer";
 import { useAuth } from "@/contexts/AuthContext";
-import { DrugStats } from "@/components/DrugStats";
 
 const DrugRecommendation = () => {
   const [patientInfo, setPatientInfo] = useState("");
@@ -26,52 +25,56 @@ const DrugRecommendation = () => {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  // Clear stored data when component unmounts or user logs out
-  useEffect(() => {
-    return () => {
-      localStorage.removeItem('patientAnalysis');
-    };
-  }, []);
-
-  // Clear stored data when user changes
-  useEffect(() => {
-    if (!user) {
-      setPatientInfo("");
-      setDisease("");
-      setRecommendations(null);
-      localStorage.removeItem('patientAnalysis');
-    }
-  }, [user]);
-
-  // Load stored data only once when component mounts
+  // Load patient data from localStorage on component mount
   useEffect(() => {
     const storedData = localStorage.getItem('patientAnalysis');
     if (storedData) {
       try {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData.patientInfo) {
-          // Extract the patient data string instead of the whole object
-          if (parsedData.patientInfo.patientData) {
-            setPatientInfo(parsedData.patientInfo.patientData);
-          } else {
-            // Handle the case where patientData isn't a nested property
-            setPatientInfo(typeof parsedData.patientInfo === 'string' 
-              ? parsedData.patientInfo 
-              : JSON.stringify(parsedData.patientInfo));
-          }
+        const { patientInfo: storedPatientInfo } = JSON.parse(storedData);
+        if (storedPatientInfo) {
+          // Format the patient information for display
+          const formattedInfo = [
+            storedPatientInfo.name ? `Name: ${storedPatientInfo.name}` : '',
+            storedPatientInfo.age ? `Age: ${storedPatientInfo.age}` : '',
+            storedPatientInfo.gender ? `Gender: ${storedPatientInfo.gender}` : '',
+            storedPatientInfo.patientData ? `\nPatient Data:\n${storedPatientInfo.patientData}` : ''
+          ].filter(Boolean).join('\n');
+          
+          setPatientInfo(formattedInfo);
           setActiveTab("patient");
+          
+          toast({
+            title: "Patient Data Loaded",
+            description: "Patient information has been loaded from your previous analysis.",
+          });
         }
       } catch (error) {
-        console.error("Error parsing stored patient data:", error);
-        localStorage.removeItem('patientAnalysis');
+        console.error('Error loading stored patient data:', error);
       }
     }
   }, []);
+
+  // Clear data when component unmounts or user logs out
+  useEffect(() => {
+    const cleanup = () => {
+      setPatientInfo("");
+      setDisease("");
+      setRecommendations(null);
+      setProgress(0);
+    };
+
+    if (!user) {
+      cleanup();
+    }
+
+    return cleanup;
+  }, [user]);
 
   const clearPatientData = () => {
     setPatientInfo("");
     setDisease("");
     setRecommendations(null);
+    setProgress(0);
     localStorage.removeItem('patientAnalysis');
     toast({
       title: "Data cleared",
@@ -102,11 +105,12 @@ const DrugRecommendation = () => {
     setProgress(0);
     setRecommendations(null);
 
-    const interval = setInterval(() => {
+    let progressInterval: NodeJS.Timeout;
+    progressInterval = setInterval(() => {
       setProgress(prev => {
         const newProgress = prev + 10;
         if (newProgress >= 90) {
-          clearInterval(interval);
+          clearInterval(progressInterval);
           return 90;
         }
         return newProgress;
@@ -172,7 +176,7 @@ const DrugRecommendation = () => {
       }
 
       setRecommendations(processedResult.recommendations);
-      clearInterval(interval);
+      clearInterval(progressInterval);
       setProgress(100);
 
       toast({
@@ -186,7 +190,7 @@ const DrugRecommendation = () => {
         title: "Recommendations failed",
         description: error instanceof Error ? error.message : "Error generating recommendations. Please try again.",
       });
-      clearInterval(interval);
+      clearInterval(progressInterval);
       setProgress(0);
     } finally {
       setIsGenerating(false);
@@ -416,12 +420,6 @@ const DrugRecommendation = () => {
             </GlassCard>
           </div>
 
-          <div className="animate-slide-up" style={{ animationDelay: "0.3s" }}>
-            {recommendations && recommendations.length > 0 ? (
-              <DrugStats drugName={recommendations[0].drugName} />
-            ) : null}
-          </div>
-
           <div className="animate-slide-up" style={{ animationDelay: "0.4s" }}>
             <GlassCard className="h-full">
               <div className="flex items-center justify-between mb-6">
@@ -458,17 +456,19 @@ const DrugRecommendation = () => {
                   {Array.isArray(recommendations) ? (
                     <>
                       {recommendations.map((rec: any, index: number) => (
-                        <div key={index} className="bg-blue-50/50 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-blue-100">
-                          <h3 className="text-lg font-semibold text-primary mb-3">{rec.drugName}</h3>
-                          <div className="space-y-3">
-                            <div>
-                              <span className="font-medium">Dosage:</span> {rec.dosage}
-                            </div>
-                            <div>
-                              <span className="font-medium">Side Effects:</span> {rec.sideEffects}
-                            </div>
-                            <div>
-                              <span className="font-medium">Precautions:</span> {rec.precautions}
+                        <div key={index} className="space-y-6">
+                          <div className="bg-blue-50/50 backdrop-blur-sm rounded-lg p-6 shadow-sm border border-blue-100">
+                            <h3 className="text-lg font-semibold text-primary mb-3">{rec.drugName}</h3>
+                            <div className="space-y-3">
+                              <div>
+                                <span className="font-medium">Dosage:</span> {rec.dosage}
+                              </div>
+                              <div>
+                                <span className="font-medium">Side Effects:</span> {rec.sideEffects}
+                              </div>
+                              <div>
+                                <span className="font-medium">Precautions:</span> {rec.precautions}
+                              </div>
                             </div>
                           </div>
                         </div>

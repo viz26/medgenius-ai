@@ -28,6 +28,11 @@ const Footer = () => {
               <h4 className="font-medium text-sm text-gray-900">Platform</h4>
               <ul className="space-y-3">
                 <li>
+                  <Link to="/home" className="text-gray-600 text-sm hover:text-blue-600 transition-colors">
+                    Home
+                  </Link>
+                </li>
+                <li>
                   <Link to="/patient-analysis" className="text-gray-600 text-sm hover:text-blue-600 transition-colors">
                     Patient Analysis
                   </Link>

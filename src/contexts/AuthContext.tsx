@@ -16,7 +16,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, name: string) => Promise<void>;
   signInWithGoogle: () => Promise<void>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -232,33 +232,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const logout = async () => {
-    try {
-      setLoading(true);
-      
-      // Call to backend to logout (if needed)
-      // const response = await fetch('https://medgenius-ai-production.up.railway.app/api/auth/logout', {
-      //   method: 'POST',
-      //   credentials: 'include'
-      // });
-      
-      // Remove from localStorage
-      localStorage.removeItem('user');
-      
-      setUser(null);
-      setError(null);
-      
-      toast({
-        title: "Logged out",
-        description: "You have been logged out successfully",
-      });
-    } catch (err) {
-      console.error('Logout error:', err);
-      setError('Failed to log out');
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const logout = () => {
+    // Clear user data
+    setUser(null);
+    localStorage.removeItem('user');
+    
+    // Clear all stored application data
+    localStorage.removeItem('patientAnalysis');
+    localStorage.removeItem('recommendations');
+    localStorage.removeItem('analysisResults');
+    localStorage.removeItem('lastActivityTime');
+    
+    // Redirect to login page using window.location
+    window.location.href = '/login';
   };
 
   const value = {

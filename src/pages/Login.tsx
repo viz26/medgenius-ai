@@ -88,13 +88,8 @@ export default function Login() {
         role: "doctor"
       };
       
-      console.log("Creating mock user:", mockUser);
-      
       // Store in localStorage (mimicking what the auth context does)
       localStorage.setItem('user', JSON.stringify(mockUser));
-      
-      // Log the stored user 
-      console.log("Stored user in localStorage:", localStorage.getItem('user'));
       
       // Update the auth state by forcing a storage event
       window.dispatchEvent(new StorageEvent('storage', {
@@ -107,13 +102,10 @@ export default function Login() {
         description: "Logged in with demo account",
       });
       
-      console.log("Navigating to home...");
       // Navigate to home after a short delay to allow state updates
       setTimeout(() => {
         navigate('/home');
-        // Force a page refresh to ensure state is updated
-        window.location.reload();
-      }, 500);
+      }, 100);
     } catch (error) {
       console.error('Demo login error:', error);
       toast({
@@ -140,23 +132,23 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 via-white to-indigo-50 p-4">
-      <div className="w-[900px] bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100">
-        <div className="flex flex-col items-center py-8">
-          <h1 className="text-6xl font-bold tracking-tight">
+      <div className="w-full max-w-[900px] bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100">
+        <div className="flex flex-col items-center py-6 sm:py-8">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight">
             <span className="text-gray-900">Med</span>
             <span className="text-blue-600">Genius</span>
             <span className="text-gray-900">AI</span>
           </h1>
-          <p className="text-lg text-gray-600 mt-4">
+          <p className="text-base sm:text-lg text-gray-600 mt-3 sm:mt-4">
             Your intelligent healthcare companion
           </p>
         </div>
 
-        <div className="px-32 pb-8">
+        <div className="px-4 sm:px-8 md:px-16 lg:px-32 pb-8">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login" className="text-lg font-medium">Login</TabsTrigger>
-              <TabsTrigger value="register" className="text-lg font-medium">Register</TabsTrigger>
+              <TabsTrigger value="login" className="text-sm sm:text-base md:text-lg font-medium">Login</TabsTrigger>
+              <TabsTrigger value="register" className="text-sm sm:text-base md:text-lg font-medium">Register</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login" className="mt-0">

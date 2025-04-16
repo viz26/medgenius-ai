@@ -4,6 +4,9 @@ import { FDAService } from '@/services/FDAService';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
+// Cache for storing drug stats
+const statsCache: { [key: string]: any } = {};
+
 interface DrugStatsProps {
   drugName: string;
 }
@@ -31,9 +34,27 @@ export function DrugStats({ drugName }: DrugStatsProps) {
         setLoading(true);
         setError(null);
         setUsingFallback(false);
+
+        // Check if we have cached data for this drug
+        if (statsCache[drugName]) {
+          setStats(statsCache[drugName]);
+          // Check if using fallback data
+          if (statsCache[drugName].totalReports === 0 && 
+              Object.values(statsCache[drugName].commonReactions).every((v: number) => v === 0)) {
+            setUsingFallback(true);
+          }
+          setLoading(false);
+          return;
+        }
+
+        // If no cached data, fetch from API
         const data = await FDAService.getDrugStats(drugName);
+        
+        // Cache the results
+        statsCache[drugName] = data;
+        
         setStats(data);
-        // Check if we're using fallback data by looking at the values
+        // Check if we're using fallback data
         if (data.totalReports === 0 && Object.values(data.commonReactions).every(v => v === 0)) {
           setUsingFallback(true);
         }
@@ -48,6 +69,11 @@ export function DrugStats({ drugName }: DrugStatsProps) {
     if (drugName) {
       fetchStats();
     }
+
+    // Cleanup function to handle component unmount
+    return () => {
+      // We don't clear the cache on unmount to preserve it for future use
+    };
   }, [drugName]);
 
   if (error) {

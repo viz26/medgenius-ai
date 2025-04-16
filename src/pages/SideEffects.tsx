@@ -458,8 +458,8 @@ const SideEffects = () => {
             <div className="bg-white rounded-xl shadow-sm border p-6 max-w-3xl mx-auto">
               <Tabs defaultValue="side-effects" className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="side-effects">Side Effect Prediction</TabsTrigger>
-                  <TabsTrigger value="interactions">Drug Interactions</TabsTrigger>
+                  <TabsTrigger value="side-effects" className="px-2 text-xs sm:text-sm md:text-base">Side Effect Prediction</TabsTrigger>
+                  <TabsTrigger value="interactions" className="px-2 text-xs sm:text-sm md:text-base">Drug Interactions</TabsTrigger>
                 </TabsList>
                 
                 <TabsContent value="side-effects" className="space-y-4">
