@@ -18,7 +18,6 @@ export const DidYouKnow = () => {
       .map((_, index) => index)
       .filter(index => !usedFactIndices.includes(index));
     
-    // If all facts have been used, reset the used facts
     if (unusedFactIndices.length === 0) {
       setUsedFactIndices([]);
       const randomIndex = Math.floor(Math.random() * medicalFacts.length);
@@ -32,7 +31,6 @@ export const DidYouKnow = () => {
 
   const changeFact = useCallback(() => {
     setIsVisible(false);
-    // Wait for exit animation to complete
     const timeout = setTimeout(() => {
       setCurrentFact(getRandomFact());
       setIsVisible(true);
@@ -41,22 +39,16 @@ export const DidYouKnow = () => {
   }, [getRandomFact]);
 
   useEffect(() => {
-    // Set up interval to change facts every 35 seconds
-    const interval = setInterval(changeFact, 35000);
-
-    // Cleanup function
-    return () => {
-      clearInterval(interval);
-    };
+    const interval = setInterval(changeFact, 30000);
+    return () => clearInterval(interval);
   }, [changeFact]);
 
   const handleClose = () => {
     setIsVisible(false);
-    // Show new fact after 35 seconds
     setTimeout(() => {
       setCurrentFact(getRandomFact());
       setIsVisible(true);
-    }, 35000);
+    }, 30000);
   };
 
   if (!currentFact) return null;
@@ -69,11 +61,11 @@ export const DidYouKnow = () => {
           animate={{ opacity: 1, y: 0, x: 0 }}
           exit={{ opacity: 0, y: -20, x: 20 }}
           transition={{ duration: 0.3 }}
-          className="fixed top-24 right-4 max-w-sm bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg shadow-lg border border-blue-100 p-4 z-[100]"
+          className="fixed top-24 right-4 max-w-sm bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 text-blue-900 rounded-lg shadow-lg border border-blue-200 p-4 z-[100]"
         >
           <button
             onClick={handleClose}
-            className="absolute top-2 right-2 text-gray-400 hover:text-gray-600 transition-colors"
+            className="absolute top-2 right-2 text-blue-600/70 hover:text-blue-800 transition-colors"
             aria-label="Close"
           >
             <X className="h-4 w-4" />
@@ -84,9 +76,9 @@ export const DidYouKnow = () => {
               <Lightbulb className="h-5 w-5 text-blue-600" />
             </div>
             <div>
-              <h3 className="font-semibold text-blue-900 mb-1">Did You Know?</h3>
-              <p className="text-sm text-gray-600">{currentFact.fact}</p>
-              <span className="inline-block mt-2 text-xs text-blue-500 font-medium px-2 py-1 bg-blue-50 rounded-full">
+              <h3 className="font-semibold text-blue-950 mb-1">Did You Know?</h3>
+              <p className="text-sm text-blue-900">{currentFact.fact}</p>
+              <span className="inline-block mt-2 text-xs text-blue-700 font-medium px-2 py-1 bg-blue-100/80 rounded-full">
                 Source: {currentFact.source}
               </span>
             </div>

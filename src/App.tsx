@@ -4,8 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 import PrivateRoute from '@/components/PrivateRoute';
 import { AdminRoute } from '@/components/AdminRoute';
-import PublicRoute from '@/components/PublicRoute';
-import Footer from '@/components/layout/Footer';
 import { DidYouKnow } from '@/components/ui/DidYouKnow';
 import Layout from '@/components/layout/Layout';
 import ScrollToTop from '@/components/ScrollToTop';
@@ -42,16 +40,6 @@ const DidYouKnowWrapper = () => {
   return <DidYouKnow />;
 };
 
-// Wrapper component to conditionally render Footer
-const FooterWrapper = () => {
-  const { user } = useAuth();
-  const location = useLocation();
-  const isLoginPage = location.pathname === '/' || location.pathname === '/login';
-
-  if (!user || isLoginPage) return null;
-  return <Footer />;
-};
-
 // Main app content component
 const AppContent = () => {
   useSessionTimeout();
@@ -66,42 +54,43 @@ const AppContent = () => {
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
 
-        {/* Protected Routes - Require authentication */}
+        {/* Protected Routes - Require authentication and use Layout */}
         <Route element={<PrivateRoute />}>
-          <Route path="/home" element={<Layout><Home /></Layout>} />
-          <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-          <Route path="/patient" element={<Layout><PatientDashboard /></Layout>} />
-          <Route path="/patient-analysis" element={<Layout><PatientAnalysis /></Layout>} />
-          <Route path="/patient/analysis" element={<Layout><PatientAnalysis /></Layout>} />
-          <Route path="/patient/analysis/:id" element={<Layout><AnalysisResults /></Layout>} />
-          <Route path="/drug-discovery" element={<Layout><DrugDiscovery /></Layout>} />
-          <Route path="/side-effects" element={<Layout><SideEffects /></Layout>} />
-          <Route path="/drug-recommendation" element={<Layout><DrugRecommendation /></Layout>} />
-          <Route path="/settings" element={<Layout><Settings /></Layout>} />
-          <Route path="/patient-dashboard" element={<Layout><PatientDashboard /></Layout>} />
-          <Route path="/analysis-results" element={<Layout><AnalysisResults /></Layout>} />
-          <Route path="/profile" element={<Layout><Profile /></Layout>} />
-          <Route path="/about" element={<Layout><AboutUs /></Layout>} />
-          <Route path="/contact" element={<Layout><ContactUs /></Layout>} />
+          <Route element={<Layout />}> {/* Layout wraps these routes */}
+            <Route path="/home" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/patient" element={<PatientDashboard />} />
+            <Route path="/patient-analysis" element={<PatientAnalysis />} />
+            <Route path="/patient/analysis" element={<PatientAnalysis />} />
+            <Route path="/patient/analysis/:id" element={<AnalysisResults />} />
+            <Route path="/drug-discovery" element={<DrugDiscovery />} />
+            <Route path="/side-effects" element={<SideEffects />} />
+            <Route path="/drug-recommendation" element={<DrugRecommendation />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/patient-dashboard" element={<PatientDashboard />} />
+            <Route path="/analysis-results" element={<AnalysisResults />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/about" element={<AboutUs />} />
+            <Route path="/contact" element={<ContactUs />} />
+            {/* Documentation Routes inside Layout */}
+            <Route path="/documentation" element={<Documentation />} />
+            <Route path="/api-reference" element={<ApiReference />} />
+            {/* Admin Routes inside Layout */}
+            <Route element={<AdminRoute />}> {/* Nested Admin Check */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/users" element={<UserManagement />} />
+              <Route path="/admin/settings" element={<Settings />} />
+            </Route>
+            {/* Fallback for not found pages inside Layout */}
+            <Route path="*" element={<NotFound />} />
+          </Route>
         </Route>
 
-        {/* Documentation Routes */}
-        <Route element={<PrivateRoute />}>
-          <Route path="/documentation" element={<Layout><Documentation /></Layout>} />
-          <Route path="/api-reference" element={<Layout><ApiReference /></Layout>} />
-        </Route>
+        {/* Removed standalone Documentation and Admin routes as they are now inside Layout */}
 
-        {/* Admin Routes */}
-        <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<Layout><AdminDashboard /></Layout>} />
-          <Route path="/admin/users" element={<Layout><UserManagement /></Layout>} />
-          <Route path="/admin/settings" element={<Layout><Settings /></Layout>} />
-        </Route>
-
-        {/* Fallback for not found pages */}
-        <Route path="*" element={<Layout><NotFound /></Layout>} />
+        {/* Fallback for routes outside authentication/layout (e.g., if PrivateRoute fails) */}
+        {/* <Route path="*" element={<NotFound />} /> Consider if a non-layout NotFound is needed */}
       </Routes>
-      <FooterWrapper />
     </>
   );
 };
